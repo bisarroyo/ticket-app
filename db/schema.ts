@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm'
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 
-export const events = sqliteTable('events', {
+export const eventsTable = sqliteTable('events', {
   eventId: integer({ mode: 'number' })
     .notNull()
     .primaryKey({ autoIncrement: true }),
@@ -45,8 +45,6 @@ export const events = sqliteTable('events', {
 
   duration: integer('duration'),
 
-  imageUrl: text('image_url'),
-
   userId: text('user_id'),
 
   map: integer('map', { mode: 'boolean' }).notNull().default(false),
@@ -55,4 +53,5 @@ export const events = sqliteTable('events', {
     .default(false)
 })
 
-export type InsertFooTable = typeof events.$inferInsert
+export type InsertEventsTable = typeof eventsTable.$inferInsert
+export type SelectEventsTable = typeof eventsTable.$inferSelect
