@@ -1,60 +1,64 @@
 import { create } from 'zustand'
 
-// State types
 interface States {
-  events: SelectEvent[] // Assuming SelectEvent is defined globally
+  events: SelectEvent[]
   loading: boolean
   error: string | null
 }
 
-// Action types
 interface Actions {
-  loadEvents: () => void
+  fetchEvents: () => Promise<void>
   getEvents: () => SelectEvent[]
+  fetchById: (id: string) => Promise<SelectEvent | null>
   getById: (id: string) => SelectEvent | undefined
 }
 
-// useEventStore
 export const useEventStore = create<States & Actions>((set, get) => ({
   events: [],
   loading: false,
   error: null,
 
-  loadEvents: async () => {
+  fetchEvents: async () => {
     set({ loading: true, error: null })
     try {
-      const response = await fetch('/api/events', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
+      const res = await fetch('/api/events')
+      if (!res.ok) throw new Error('Failed to fetch events')
+      const data = await res.json()
+      set({ events: data, loading: false })
+      console.log('Events loaded:', data)
+    } catch (err) {
+      console.error(err)
+      set({ error: 'Error al cargar eventos', loading: false })
+    }
+  },
+
+  getEvents: () => get().events,
+
+  fetchById: async (id: string) => {
+    set({ loading: true, error: null })
+    try {
+      const res = await fetch(`/api/events/${id}`)
+      if (!res.ok) {
+        set({ error: `Error al cargar el evento con id ${id}`, loading: false })
+        return null
+      }
+      const data: SelectEvent = await res.json()
+      set((state) => {
+        const exists = state.events.some((e) => e.id === id)
+        return {
+          events: exists
+            ? state.events.map((e) => (e.id === id ? data : e))
+            : [...state.events, data],
+          loading: false
         }
       })
-      if (!response) {
-        throw new Error('Failed to fetch events')
-      }
-      const data = await response.json()
-      set({ events: data, loading: false })
-      console.log('Events loaded successfully:', data)
-    } catch (error) {
-      set({ error: 'Error al cargar eventos', loading: false })
-      console.error('Error loading events:', error)
+      return data
+    } catch (err) {
+      console.error(err)
+      set({ error: `Error al cargar el evento con id ${id}`, loading: false })
+      return null
     }
   },
-  getEvents: () => {
-    const { events } = get()
-    if (events.length === 0) {
-      console.warn('No events loaded yet, fetching...')
-      get().loadEvents() // Load events if not already loaded
-      return []
-    }
-    if (events.length === 0) {
-      console.warn('No events available')
-      return []
-    }
-    return events
-  },
-  getById: (id: string): SelectEvent[] | undefined => {
-    const { events } = get() // Obtener el estado actual del store
-    return events.find((event) => event.id === id)
-  }
+
+  getById: (id: string) => get().events.find((e) => e.id === id)
 }))
