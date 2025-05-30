@@ -9,24 +9,24 @@ import { useEventStore } from '@/app/store/events'
 import { useEffect } from 'react'
 
 export default function Events() {
-  const { events, loading, error, getEvents } = useEventStore((state) => state)
+  const { events, loading, error, fetchEvents } = useEventStore()
 
   useEffect(() => {
     if (events.length === 0) {
-      getEvents()
+      fetchEvents()
     }
-  }, [events, getEvents])
+  }, [events, fetchEvents])
 
   console.log('Events:', events)
-  if (error) {
-    return <div>error</div>
-  }
   if (loading) {
     return (
       <div className='flex justify-center items-center h-screen'>
         <Loading />
       </div>
     )
+  }
+  if (error) {
+    return <div>error</div>
   }
   if (!events || events.length === 0) {
     return <div className='text-center'>No hay eventos disponibles</div>
@@ -41,12 +41,12 @@ export default function Events() {
           {events?.map((event: SelectEvent) => (
             <CardEvent
               key={event.id}
-              location={event.venue_id?.name}
+              location={event.venueId?.name}
               name={event.name}
               url={`/event/${event.id}`}
               date={format(event.date, { date: 'long' }, 'es')}
               time={format(event.date, { time: 'short' })}
-              image={event.event_image}
+              image={event.eventImage}
             />
           ))}
         </div>
