@@ -15,6 +15,13 @@
       "when": 1748581800026,
       "tag": "0001_bouncy_ma_gnuci",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1748640820695,
+      "tag": "0002_equal_miek",
+      "breakpoints": true
     }
   ]
 }

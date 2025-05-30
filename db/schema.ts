@@ -2,9 +2,7 @@ import { sql } from 'drizzle-orm'
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 
 export const eventsTable = sqliteTable('events', {
-  eventId: integer({ mode: 'number' })
-    .notNull()
-    .primaryKey({ autoIncrement: true }),
+  id: integer({ mode: 'number' }).notNull().primaryKey({ autoIncrement: true }),
 
   created_at: text('created_at')
     .notNull()
