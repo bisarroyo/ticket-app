@@ -13,11 +13,12 @@ export default function Events() {
 
   useEffect(() => {
     if (events.length === 0) {
+      console.log('Fetching events...')
       fetchEvents()
     }
   }, [events, fetchEvents])
 
-  console.log('Events:', events)
+  // console.log('Events:', events)
   if (loading) {
     return (
       <div className='flex justify-center items-center h-screen'>
@@ -31,8 +32,6 @@ export default function Events() {
   if (!events || events.length === 0) {
     return <div className='text-center'>No hay eventos disponibles</div>
   }
-  const date = new Date(events[0].date)
-  console.log('First event date:', date)
 
   return (
     <>

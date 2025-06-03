@@ -12,20 +12,21 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
 
   const { loading, error, getById, fetchById } = useEventStore()
+  const eventId = getById(id)
+
   const [event, setEvent] = useState<SelectEvent | undefined>()
 
   useEffect(() => {
-    const existing = getById(id)
-    if (existing) {
-      setEvent(existing)
+    if (eventId) {
+      setEvent(eventId)
     } else {
       fetchById(id).then((e) => {
         if (e) setEvent(e)
       })
     }
-  }, [id, getById, fetchById])
+  }, [id, eventId, fetchById])
 
-  console.log('Event:', event)
+  // console.log('Event:', event)
 
   if (loading) {
     return (

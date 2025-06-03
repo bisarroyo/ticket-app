@@ -52,6 +52,7 @@ export const useEventStore = create<States & Actions>((set, get) => ({
           loading: false
         }
       })
+      // console.log('Events:', get().events)
       return data
     } catch (err) {
       console.error(err)
@@ -60,5 +61,5 @@ export const useEventStore = create<States & Actions>((set, get) => ({
     }
   },
 
-  getById: (id: string) => get().events.find((e) => e.id === id)
+  getById: (id: string) => get().events.find((e) => e.id.toString() === id)
 }))
