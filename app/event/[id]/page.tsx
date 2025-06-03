@@ -52,7 +52,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
         name={event.name}
         url={event.eventImage}
         date={event.startsAt}
-        location={event.venueId?.name ?? 'test'}
+        venueId={event.venueId?.name ?? 'test'}
         description={event.description}
         aditional_info={event.aditionalInfo}
         prices={event.prices}

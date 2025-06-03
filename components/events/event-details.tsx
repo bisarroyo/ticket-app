@@ -5,11 +5,11 @@ import { Calendar, MapPin } from 'lucide-react'
 
 type Props = {
   date: string
-  location: string
+  venue: string
   isAvailable: boolean
 }
 
-export default function EventDetails({ date, location }: Props) {
+export default function EventDetails({ date, venue }: Props) {
   return (
     <div className='grid gap-4 mb-8'>
       <Badge
@@ -21,11 +21,7 @@ export default function EventDetails({ date, location }: Props) {
         )}`}
         icon={<Calendar size={40} />}
       />
-      <Badge
-        title={location}
-        content='San José, CR'
-        icon={<MapPin size={40} />}
-      />
+      <Badge title={venue} content='San José, CR' icon={<MapPin size={40} />} />
     </div>
   )
 }
