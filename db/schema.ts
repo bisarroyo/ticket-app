@@ -53,9 +53,96 @@ export const venuesTable = sqliteTable('venues', {
     .default(sql`CURRENT_TIMESTAMP`)
 })
 
+export const sectionsTable = sqliteTable('sections', {
+  id: integer({ mode: 'number' }).notNull().primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  price: integer('price').notNull().default(0),
+  description: text('description'),
+  capacity: integer('capacity').notNull().default(0),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(false),
+  color: text('color').notNull(),
+  venueId: integer('venue_id')
+    .notNull()
+    .references(() => venuesTable.id), // uuid → text
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`)
+})
+
+export const seatsTable = sqliteTable('seats', {
+  id: integer({ mode: 'number' }).notNull().primaryKey({ autoIncrement: true }),
+  sectionId: integer('section_id')
+    .notNull()
+    .references(() => sectionsTable.id),
+  row: text('row').notNull(),
+  number: integer('number').notNull(),
+  isAvailable: integer('is_available', { mode: 'boolean' })
+    .notNull()
+    .default(true),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`)
+})
+
+export const ticketsTable = sqliteTable('tickets', {
+  id: integer({ mode: 'number' }).notNull().primaryKey({ autoIncrement: true }),
+  eventId: integer('event_id')
+    .notNull()
+    .references(() => eventsTable.id),
+  sectionId: integer('section_id')
+    .notNull()
+    .references(() => sectionsTable.id),
+  seatId: integer('seat_id')
+    .notNull()
+    .references(() => seatsTable.id),
+  userId: text('user_id').notNull(),
+  orderId: integer('order_id')
+    .notNull()
+    .references(() => ordersTable.id),
+  usedAt: integer('used_at', { mode: 'timestamp' }),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`)
+})
+
+export const ordersTable = sqliteTable('orders', {
+  id: integer({ mode: 'number' }).notNull().primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull(),
+  eventId: integer('event_id')
+    .notNull()
+    .references(() => eventsTable.id),
+  totalAmount: integer('total_amount').notNull().default(0),
+  status: text('status').notNull().default('pending'),
+  paymentMethod: text('payment_method').notNull(),
+  paymentStatus: text('payment_status').notNull().default('pending'),
+  createdAt: text('created_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`)
+})
+
 export type Schema = {
   InsertEventsTable: typeof eventsTable.$inferInsert
   SelectEventsTable: typeof eventsTable.$inferSelect
   InsertVenuesTable: typeof venuesTable.$inferInsert
   SelectVenuesTable: typeof venuesTable.$inferSelect
+  InsertSectionsTable: typeof sectionsTable.$inferInsert
+  SelectSectionsTable: typeof sectionsTable.$inferSelect
+  InsertSeatsTable: typeof seatsTable.$inferInsert
+  SelectSeatsTable: typeof seatsTable.$inferSelect
+  InsertTicketsTable: typeof ticketsTable.$inferInsert
+  SelectTicketsTable: typeof ticketsTable.$inferSelect
+  InsertOrdersTable: typeof ordersTable.$inferInsert
+  SelectOrdersTable: typeof ordersTable.$inferSelect
 }
