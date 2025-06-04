@@ -61,5 +61,6 @@ export const useEventStore = create<States & Actions>((set, get) => ({
     }
   },
 
-  getById: (id: string) => get().events.find((e) => e.id.toString() === id)
+  getById: (id: string) =>
+    get().events.find((e) => e.events.id.toString() === id)
 }))

@@ -9,24 +9,25 @@ import { use, useEffect, useState } from 'react'
 import { useEventStore } from '@/app/store/events'
 
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+  const { id: paramId } = use(params)
 
   const { loading, error, getById, fetchById } = useEventStore()
-  const eventId = getById(id)
 
-  const [event, setEvent] = useState<SelectEvent | undefined>()
+  const eventId = getById(paramId)
+  const [event, setEvent] = useState<(SelectEvent & SelectVenue) | undefined>()
 
   useEffect(() => {
     if (eventId) {
       setEvent(eventId)
+      console.log('EventId:', eventId)
     } else {
-      fetchById(id).then((e) => {
+      fetchById(paramId).then((e) => {
         if (e) setEvent(e)
       })
     }
-  }, [id, eventId, fetchById])
+  }, [paramId, eventId, fetchById])
 
-  // console.log('Event:', event)
+  // console.log('id:', id)
 
   if (loading) {
     return (
@@ -36,7 +37,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     )
   }
 
-  if (!id || !event || error) {
+  if (!paramId || !event || error) {
     return (
       <div className='container'>
         <NotFound />
@@ -44,18 +45,30 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     )
   }
 
+  const {
+    events: {
+      id,
+      name,
+      eventImage,
+      startsAt,
+      venueId,
+      description,
+      aditionalInfo,
+      prices
+    }
+  } = event
+
   return (
     <section className='my-5'>
       <SingleEvent
-        events={event}
-        id={event.id}
-        name={event.name}
-        url={event.eventImage}
-        date={event.startsAt}
-        venueId={event.venueId?.name ?? 'test'}
-        description={event.description}
-        aditional_info={event.aditionalInfo}
-        prices={event.prices}
+        id={id}
+        name={name}
+        url={eventImage}
+        date={startsAt}
+        venueId={venueId?.name ?? 'test'}
+        description={description}
+        aditional_info={aditionalInfo}
+        prices={prices}
       />
     </section>
   )

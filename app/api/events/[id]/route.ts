@@ -1,6 +1,6 @@
 import { db } from '@/lib/db'
-import { eventsTable } from '@/db/schema'
-import { sql } from 'drizzle-orm'
+import { eventsTable, venuesTable } from '@/db/schema'
+import { eq, sql } from 'drizzle-orm'
 
 import { type NextRequest } from 'next/server'
 
@@ -26,6 +26,7 @@ export async function GET(
       .from(eventsTable)
       .where(sql`${eventsTable.id} = ${id}`)
       .limit(1)
+      .leftJoin(venuesTable, eq(eventsTable.venueId, venuesTable.id))
 
     if (!response) {
       throw new Error('Failed to fetch event')

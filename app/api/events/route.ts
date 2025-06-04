@@ -1,5 +1,6 @@
 import { db } from '@/lib/db'
-import { eventsTable } from '@/db/schema'
+import { eventsTable, venuesTable } from '@/db/schema'
+import { eq } from 'drizzle-orm'
 
 export async function GET() {
   try {
@@ -7,6 +8,8 @@ export async function GET() {
       .select()
       .from(eventsTable)
       .orderBy(eventsTable.date)
+      .where(eq(eventsTable.isActive, true))
+      .leftJoin(venuesTable, eq(eventsTable.venueId, venuesTable.id))
 
     if (!response) {
       throw new Error('Failed to fetch events')

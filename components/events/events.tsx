@@ -13,7 +13,7 @@ export default function Events() {
 
   useEffect(() => {
     if (events.length === 0) {
-      console.log('Fetching events...')
+      // console.log(events)
       fetchEvents()
     }
   }, [events, fetchEvents])
@@ -37,17 +37,21 @@ export default function Events() {
     <>
       <main>
         <div className=' py-5 gap-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-center align-middle'>
-          {events?.map((event: SelectEvent) => (
-            <CardEvent
-              key={event.id}
-              location={event.venueId?.name}
-              name={event.name}
-              url={`/event/${event.id}`}
-              date={format(event.date, { date: 'long' }, 'es')}
-              time={format(event.date, { time: 'short' })}
-              image={event.eventImage}
-            />
-          ))}
+          {events?.map((event: SelectEvent) => {
+            const { events } = event
+            // console.log('Event:', events)
+            return (
+              <CardEvent
+                key={events.id}
+                location={event?.venues?.name}
+                name={events.name}
+                url={`/event/${events.id}`}
+                date={format(events.date, { date: 'long' }, 'es')}
+                time={format(events.date, { time: 'short' })}
+                image={events.eventImage}
+              />
+            )
+          })}
         </div>
       </main>
     </>
