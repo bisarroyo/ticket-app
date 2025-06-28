@@ -32,7 +32,10 @@ export const useEventStore = create<States & Actions>((set, get) => ({
     }
   },
 
-  getEvents: () => get().events,
+  getEvents: () => {
+    console.log('Getting events from store:', get().events)
+    return get().events
+  },
 
   fetchById: async (id: string) => {
     set({ loading: true, error: null })
@@ -43,16 +46,29 @@ export const useEventStore = create<States & Actions>((set, get) => ({
         return null
       }
       const data: SelectEvent = await res.json()
-      set((state) => {
-        const exists = state.events.some((e) => e.id === id)
-        return {
-          events: exists
-            ? state.events.map((e) => (e.id === id ? data : e))
-            : [...state.events, data],
-          loading: false
+      if (data.length > 1) {
+        const rows: EventWithVenueAndSections = {
+          events: data[0].events,
+          venues: data[0].venues,
+          sections: []
         }
-      })
-      // console.log('Events:', get().events)
+        data.forEach((el: SelectSection) => {
+          const section = el.sections
+          if (section) {
+            rows.sections.push(section)
+          }
+        })
+        set((state) => {
+          const exists = state.events.some((e) => e.id === id)
+
+          return {
+            events: exists
+              ? state.events.map((e) => (e.id === id ? rows : e))
+              : [...state.events, rows],
+            loading: false
+          }
+        })
+      }
       return data
     } catch (err) {
       console.error(err)
@@ -61,6 +77,7 @@ export const useEventStore = create<States & Actions>((set, get) => ({
     }
   },
 
-  getById: (id: string) =>
-    get().events.find((e) => e.events.id.toString() === id)
+  getById: (id: string) => {
+    get().events.find((e: SelectEvent) => e.events.id.toString() === id)
+  }
 }))

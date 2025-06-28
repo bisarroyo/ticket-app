@@ -9,16 +9,17 @@ import { useEventStore } from '@/app/store/events'
 import { useEffect } from 'react'
 
 export default function Events() {
-  const { events, loading, error, fetchEvents } = useEventStore()
+  const { events, getEvents, loading, error, fetchEvents } = useEventStore()
 
   useEffect(() => {
-    if (events.length === 0) {
-      // console.log(events)
+    const events = getEvents()
+    if (events.length <= 1) {
+      console.log(events.length, 'No events found, fetching...')
       fetchEvents()
     }
-  }, [events, fetchEvents])
+  }, [getEvents, fetchEvents])
 
-  // console.log('Events:', events)
+  console.log('Events:', events)
   if (loading) {
     return (
       <div className='flex justify-center items-center h-screen'>
@@ -39,7 +40,6 @@ export default function Events() {
         <div className=' py-5 gap-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-center align-middle'>
           {events?.map((event: SelectEvent) => {
             const { events } = event
-            // console.log('Event:', events)
             return (
               <CardEvent
                 key={events.id}

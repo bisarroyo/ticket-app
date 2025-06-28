@@ -1,6 +1,6 @@
 import { db } from '@/lib/db'
-import { eventsTable, venuesTable } from '@/db/schema'
-import { eq, sql } from 'drizzle-orm'
+import { eventsTable, sectionsTable, venuesTable } from '@/db/schema'
+import { eq } from 'drizzle-orm'
 
 import { type NextRequest } from 'next/server'
 
@@ -9,7 +9,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  console.log(id)
 
   if (!id) {
     return new Response(JSON.stringify({ error: 'Event ID is required' }), {
@@ -21,18 +20,19 @@ export async function GET(
   }
 
   try {
-    const response = db
+    const rows = db
       .select()
       .from(eventsTable)
-      .where(sql`${eventsTable.id} = ${id}`)
-      .limit(1)
-      .leftJoin(venuesTable, eq(eventsTable.venueId, venuesTable.id))
+      .where(eq(eventsTable.id, Number(id)))
+      .leftJoin(venuesTable, eq(venuesTable.eventId, eventsTable.id))
+      .innerJoin(sectionsTable, eq(venuesTable.id, sectionsTable.venueId))
 
-    if (!response) {
+    if (!rows) {
       throw new Error('Failed to fetch event')
     }
+    console.log(rows)
 
-    return response.then((data) => {
+    return rows.then((data) => {
       if (data.length === 0) {
         return new Response(JSON.stringify({ error: 'Event not found' }), {
           status: 404,
@@ -41,7 +41,7 @@ export async function GET(
           }
         })
       }
-      return new Response(JSON.stringify(data[0]), {
+      return new Response(JSON.stringify(data), {
         status: 200,
         headers: {
           'Content-Type': 'application/json'

@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 
 export const eventsTable = sqliteTable('events', {
@@ -23,9 +23,6 @@ export const eventsTable = sqliteTable('events', {
   // jsonb[] NO existe en LibSQL. Usa un array serializado o una tabla relacionada.
   aditionalInfo: text({ mode: 'json' }).$type<{ detail: string }>(),
   prices: text({ mode: 'json' }).$type<{ detail: string }>(),
-  venueId: text('venue_id')
-    .notNull()
-    .references(() => venuesTable.id), // uuid → text
   duration: integer('duration'),
   userId: text('user_id'),
   map: integer('map', { mode: 'boolean' }).notNull().default(false),
@@ -45,6 +42,10 @@ export const venuesTable = sqliteTable('venues', {
   latitude: integer('latitude', { mode: 'number' }).notNull(),
   longitude: integer('longitude', { mode: 'number' }).notNull(),
   svgMap: text('svg_map'), // SVG map as text
+  eventId: integer('event_id')
+    .notNull()
+    .references(() => eventsTable.id, { onDelete: 'cascade' })
+    .default(1),
   createdAt: text('created_at')
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
@@ -131,6 +132,34 @@ export const ordersTable = sqliteTable('orders', {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`)
 })
+
+export const EventsRelations = relations(eventsTable, ({ one }) => ({
+  venues: one(venuesTable)
+}))
+
+export const venuesRelations = relations(venuesTable, ({ one, many }) => ({
+  events: one(eventsTable, {
+    fields: [venuesTable.eventId],
+    references: [eventsTable.id]
+  }),
+  sections: many(sectionsTable)
+}))
+
+export const sectionsRelations = relations(sectionsTable, ({ one }) => ({
+  venues: one(venuesTable, {
+    fields: [sectionsTable.venueId],
+    references: [venuesTable.id]
+  })
+}))
+
+export const SchemaDb = {
+  eventsTable,
+  venuesTable,
+  sectionsTable,
+  seatsTable,
+  ticketsTable,
+  ordersTable
+}
 
 export type Schema = {
   InsertEventsTable: typeof eventsTable.$inferInsert

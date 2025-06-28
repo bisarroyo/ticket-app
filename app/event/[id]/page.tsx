@@ -17,17 +17,22 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const [event, setEvent] = useState<(SelectEvent & SelectVenue) | undefined>()
 
   useEffect(() => {
-    if (eventId) {
+    if (eventId && eventId !== 'undefined') {
       setEvent(eventId)
       console.log('EventId:', eventId)
     } else {
       fetchById(paramId).then((e) => {
-        if (e) setEvent(e)
+        if (e) {
+          setEvent(
+            e.find(
+              (ev: EventWithVenueAndSections) =>
+                ev.events.id === Number(paramId)
+            )
+          )
+        }
       })
     }
   }, [paramId, eventId, fetchById])
-
-  // console.log('id:', id)
 
   if (loading) {
     return (
@@ -51,11 +56,11 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
       name,
       eventImage,
       startsAt,
-      venueId,
       description,
       aditionalInfo,
       prices
-    }
+    },
+    venues
   } = event
 
   return (
@@ -65,7 +70,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
         name={name}
         url={eventImage}
         date={startsAt}
-        venueId={venueId?.name ?? 'test'}
+        venueId={venues?.name ?? 'test'}
         description={description}
         aditional_info={aditionalInfo}
         prices={prices}

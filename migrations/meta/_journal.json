@@ -36,6 +36,27 @@
       "when": 1749072186018,
       "tag": "0004_clear_whistler",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1749323416800,
+      "tag": "0005_narrow_lady_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1749323469839,
+      "tag": "0006_grey_the_renegades",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1749323539726,
+      "tag": "0007_stale_sentinels",
+      "breakpoints": true
     }
   ]
 }

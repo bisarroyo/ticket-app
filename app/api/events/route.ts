@@ -5,15 +5,27 @@ import { eq } from 'drizzle-orm'
 export async function GET() {
   try {
     const response = await db
-      .select()
+      .select({
+        events: {
+          id: eventsTable.id,
+          name: eventsTable.name,
+          date: eventsTable.date,
+          eventImage: eventsTable.eventImage
+        },
+        venues: {
+          id: venuesTable.id,
+          name: venuesTable.name
+        }
+      })
       .from(eventsTable)
       .orderBy(eventsTable.date)
-      .where(eq(eventsTable.isActive, true))
-      .leftJoin(venuesTable, eq(eventsTable.venueId, venuesTable.id))
+      .leftJoin(venuesTable, eq(venuesTable.eventId, eventsTable.id))
 
     if (!response) {
+      console.log(response)
       throw new Error('Failed to fetch events')
     }
+    console.log('Response:', response)
 
     const data: SelectEvent[] = await response
     return new Response(JSON.stringify(data), {

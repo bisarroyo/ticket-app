@@ -1,5 +1,6 @@
 import { drizzle } from 'drizzle-orm/libsql'
 import { createClient } from '@libsql/client'
+// import { SchemaDb } from '@/db/schema'
 
 const turso = createClient({
   url: process.env.TURSO_DATABASE_URL! as string,
@@ -7,3 +8,4 @@ const turso = createClient({
 })
 
 export const db = drizzle(turso)
+// export const db = drizzle<typeof SchemaDb>(turso)
