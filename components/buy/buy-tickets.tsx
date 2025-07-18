@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import {
   Table,
   TableBody,
@@ -6,137 +6,169 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
-} from '@/components/ui/table'
-import { useEffect, useState } from 'react'
-// import VenueMap from '@/components/buy/venue-map'
-import InputTicket from './input-ticket'
-import Button from '../ui/button'
+  TableRow,
+} from "@/components/ui/table";
 
-type SelectedSeat = { id: string; qty: number }
+import { useReducer, useEffect, useState } from "react";
+import InputTicket from "./input-ticket";
+import Button from "../ui/button";
 
-const BuyTickets: React.FC<{ event: BuyEvent }> = ({ event }) => {
-  const [selectedSeats, setSelectedSeats] = useState<SelectedSeat[]>([])
-  const [loading, setLoading] = useState<boolean>(false)
-  const [error, setError] = useState<string | null>(null)
+type SelectedSeat = { id: number; qty: number; max: number };
 
-  const handleSeatAdd = (id: string) => {
-    const newState = selectedSeats.map((section) => {
-      if (section.id === id) {
-        return { ...section, qty: section.qty + 1 }
-      }
-      return section
-    })
-    setSelectedSeats(newState)
+type Action =
+  | { type: "add"; id: string }
+  | { type: "remove"; id: string }
+  | { type: "reset"; seats: SelectedSeat[] };
+
+function seatsReducer(state: SelectedSeat[], action: Action): SelectedSeat[] {
+  const MAX_TOTAL = 10;
+  switch (action.type) {
+    case "add": {
+      const totalQty = state.reduce((sum, s) => sum + s.qty, 0);
+      return state.map((section) => {
+        if (
+          section.id === Number(action.id) &&
+          section.qty < section.max &&
+          totalQty < MAX_TOTAL
+        ) {
+          return { ...section, qty: section.qty + 1 };
+        }
+        return section;
+      });
+    }
+    case "remove":
+      return state.map((section) =>
+        section.id === Number(action.id) && section.qty > 0
+          ? { ...section, qty: section.qty - 1 }
+          : section
+      );
+    case "reset":
+      return action.seats;
+    default:
+      return state;
   }
-  const handleSeatRemove = (id: string) => {
-    const newState = selectedSeats.map((section) => {
-      if (section.id === id) {
-        if (section.qty === 0) return section
-        return { ...section, qty: section.qty - 1 }
-      }
-      return section
-    })
-    setSelectedSeats(newState)
-  }
+}
+
+const BuyTickets: React.FC<{
+  event: SelectEvent;
+  maxTicketsPerSection?: number;
+}> = ({ event, maxTicketsPerSection = 10 }) => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Inicializa los asientos seleccionados con useReducer
+  const [selectedSeats, dispatch] = useReducer(
+    seatsReducer,
+    event.sections?.map((section: SelectSection) => ({
+      id: section.id,
+      qty: 0,
+      max: Math.min(section.capacity, maxTicketsPerSection),
+    })) ?? []
+  );
+
+  // Calcula el total de tickets seleccionados
+  const totalQty = selectedSeats.reduce((sum, s) => sum + s.qty, 0);
+
+  // Si el evento cambia, resetea los asientos
+  useEffect(() => {
+    dispatch({
+      type: "reset",
+      seats:
+        event.sections?.map((section: SelectSection) => ({
+          id: section.id,
+          qty: 0,
+          max: Math.min(section.capacity, maxTicketsPerSection),
+        })) ?? [],
+    });
+  }, [event, maxTicketsPerSection]);
 
   const validateSections = async () => {
+    setLoading(true);
     const payload = {
-      event_id: event.id,
+      event_id: event.events.id,
       sections: selectedSeats
         .filter((section) => section.qty > 0)
         .map((section) => ({
           id: section.id,
-          qyt: section.qty
+          qty: section.qty,
         })),
-      error: null
-    }
+    };
     try {
-      const res = await fetch('/api/buy/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
+      const res = await fetch("/api/buy/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-      const data = await res.json()
+      const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error)
+        setError(data.error);
       } else {
-        console.log(data)
         // Redirigir o avanzar
       }
-    } catch (error) {
-      console.log(error)
-      setError('Error al procesar la compra')
+    } catch {
+      setError("Error al procesar la compra");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    const { sections } = event.venue_id
-
-    const state = sections?.map((section) => {
-      return { id: section.id, qty: 0 }
-    })
-    setSelectedSeats(state)
-  }, [event])
+  };
 
   return (
     <div>
-      <h1>Buy Tickets</h1>
-      <div>
-        <Table>
-          <TableCaption>Lista de precios.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className='w-[100px]'>Ubicación</TableHead>
-              <TableHead className='text-right'>Precio</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {event.venue_id.sections?.map((sections) => {
-              const selected = selectedSeats.find(
-                (seat) => seat.id === sections.id
-              )
-              return (
-                <TableRow key={sections.id}>
-                  <TableCell className='font-medium'>
-                    {sections?.name}
-                  </TableCell>
-                  <TableCell className='text-right'>
-                    {sections?.price}
-                  </TableCell>
-                  <TableCell className='text-right'>
-                    <InputTicket
-                      handleClickRemoveTicket={() =>
-                        handleSeatRemove(sections.id)
-                      }
-                      handleClickAddTicket={() => handleSeatAdd(sections.id)}
-                      value={selected?.qty ?? 0}
-                    />
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-        <Button
-          className='mt-4'
-          variant='default'
-          type='submit'
-          text='Continuar'
-          onClick={validateSections}
-          disabled={loading}
-        />
+      <h1>Comprar Tickets</h1>
+      <Table>
+        <TableCaption>Lista de precios.</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Ubicación</TableHead>
+            <TableHead className="">Precio</TableHead>
+            <TableHead className="">Cantidad</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {event.sections?.map((section: SelectSection) => {
+            const selected = selectedSeats.find(
+              (seat) => seat.id === section.id
+            );
+            const canAdd =
+              selected && selected.qty < selected.max && totalQty < 10;
+            return (
+              <TableRow key={section.id}>
+                <TableCell>{section.name}</TableCell>
+                <TableCell className="">{section.price}</TableCell>
+                <TableCell className="mx-2">
+                  <InputTicket
+                    handleClickRemoveTicket={() =>
+                      dispatch({ type: "remove", id: section.id })
+                    }
+                    handleClickAddTicket={
+                      canAdd
+                        ? () => dispatch({ type: "add", id: section.id })
+                        : () => {}
+                    }
+                    value={selected?.qty ?? 0}
+                  />
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+      <div className="mt-2 text-right font-bold">
+        Total tickets: {totalQty} / 10
       </div>
-      {error && <p className='text-red-500'>{error}</p>}
-      {/* <div className='h-[400px] w-full'>
-        <VenueMap eventId={event.id} onSeatSelect={handleSeat} />
-      {/* <VenueMap eventId={id} onSeatSelect={handleSeat} /> */}
+      <Button
+        className="mt-4"
+        variant="default"
+        type="submit"
+        text="Continuar"
+        onClick={validateSections}
+        disabled={loading || totalQty === 0}
+      />
+      {error && <p className="text-red-500">{error}</p>}
     </div>
-  )
-}
+  );
+};
 
-export default BuyTickets
+export default BuyTickets;
