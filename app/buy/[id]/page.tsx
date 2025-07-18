@@ -1,51 +1,69 @@
-'use client'
+"use client";
 // import BuyTickets from '@/components/buy/buy-tickets'
 
-import { use, useEffect, useState } from 'react'
+import { use, useEffect } from "react";
 
-import Loading from '@/components/ui/loading'
+import Loading from "@/components/ui/loading";
 
 // state
-import { useEventStore } from '@/app/store/events'
+import { useEventStore } from "@/app/store/events";
 
-import NotFound from '@/app/not-found'
+import NotFound from "@/app/not-found";
+import BuyTickets from "@/components/buy/buy-tickets";
 
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id: paramId } = use(params)
+  const { id: paramId } = use(params);
 
-  const { loading, error, getById, fetchById } = useEventStore()
+  const {
+    loading,
+    error,
+    getById,
+    fetchById,
+    clearSelectedEvent,
+    setSelectedEvent,
+    selectedEvent,
+  } = useEventStore();
 
-  const eventId = getById(paramId)
+  const found = getById(paramId);
 
   useEffect(() => {
-    if (eventId) {
-      setEvent(eventId.sections)
+    if (found) {
+      setSelectedEvent(found);
     } else {
-      fetchById(paramId).then((e) => {
-        if (e) setEvent(e)
-      })
+      fetchById(paramId);
+      return () => clearSelectedEvent();
     }
-  }, [paramId, eventId, fetchById])
+  }, [
+    paramId,
+    getById,
+    fetchById,
+    clearSelectedEvent,
+    setSelectedEvent,
+    found,
+  ]);
 
-  const [event, setEvent] = useState<(SelectEvent & SelectVenue) | undefined>()
-
+  console.log("Event:", selectedEvent);
   if (loading) {
     return (
-      <div className='flex justify-center items-center'>
+      <div className="flex justify-center items-center">
         <Loading />
       </div>
-    )
+    );
   }
 
-  if (!paramId || !event || error) {
+  if (!paramId || !selectedEvent || error) {
     return (
-      <div className='container'>
+      <div className="container">
         <NotFound />
       </div>
-    )
+    );
   }
-  // if (!event?.display_map) {
-  //   return <BuyTickets event={event} />
-  // }
-  return <section className='container'>{event?.id}</section>
+  if (!selectedEvent?.events.display_map) {
+    return (
+      <div className="container max-w-5xl mx-auto px-4 py-8">
+        <BuyTickets event={selectedEvent} />
+      </div>
+    );
+  }
+  // return <section className="container">{selectedEvent?.events.id}</section>;
 }
