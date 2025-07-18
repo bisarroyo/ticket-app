@@ -1,80 +1,49 @@
-'use client'
+"use client";
 
-import SingleEvent from '@/components/events/single-event'
-import Loading from '@/components/ui/loading'
-import NotFound from '@/components/ui/not-found'
-import { use, useEffect, useState } from 'react'
+import SingleEvent from "@/components/events/single-event";
+import Loading from "@/components/ui/loading";
+import NotFound from "@/components/ui/not-found";
+import { use, useEffect } from "react";
 
 // state
-import { useEventStore } from '@/app/store/events'
+import { useEventStore } from "@/app/store/events";
 
 export default function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id: paramId } = use(params)
+  const { id: paramId } = use(params);
 
-  const { loading, error, getById, fetchById } = useEventStore()
-
-  const eventId = getById(paramId)
-  const [event, setEvent] = useState<(SelectEvent & SelectVenue) | undefined>()
+  const { loading, error, fetchById, selectedEvent, clearSelectedEvent } =
+    useEventStore();
 
   useEffect(() => {
-    if (eventId && eventId !== 'undefined') {
-      setEvent(eventId)
-      console.log('EventId:', eventId)
-    } else {
-      fetchById(paramId).then((e) => {
-        if (e) {
-          setEvent(
-            e.find(
-              (ev: EventWithVenueAndSections) =>
-                ev.events.id === Number(paramId)
-            )
-          )
-        }
-      })
-    }
-  }, [paramId, eventId, fetchById])
+    fetchById(paramId);
+    return () => {
+      clearSelectedEvent();
+    };
+  }, [paramId, fetchById, clearSelectedEvent]);
 
   if (loading) {
     return (
-      <div className='flex justify-center items-center'>
+      <div className="flex justify-center items-center">
         <Loading />
       </div>
-    )
+    );
   }
 
-  if (!paramId || !event || error) {
+  if (!paramId || !selectedEvent || error) {
     return (
-      <div className='container'>
+      <div className="container">
         <NotFound />
+        {error && <div className="text-red-500 text-center mt-4">{error}</div>}
       </div>
-    )
+    );
   }
+  console.log(selectedEvent);
 
-  const {
-    events: {
-      id,
-      name,
-      eventImage,
-      startsAt,
-      description,
-      aditionalInfo,
-      prices
-    },
-    venues
-  } = event
+  const { events, venues, sections } = selectedEvent;
 
   return (
-    <section className='my-5'>
-      <SingleEvent
-        id={id}
-        name={name}
-        url={eventImage}
-        date={startsAt}
-        venueId={venues?.name ?? 'test'}
-        description={description}
-        aditional_info={aditionalInfo}
-        prices={prices}
-      />
+    <section className="my-5">
+      <SingleEvent sections={sections} events={events} venues={venues} />
     </section>
-  )
+  );
 }
