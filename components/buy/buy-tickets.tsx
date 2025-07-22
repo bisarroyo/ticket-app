@@ -105,7 +105,14 @@ const BuyTickets: React.FC<{
       if (!res.ok) {
         setError(data.error);
       } else {
-        // Redirigir o avanzar
+        setError(null);
+        // Redirigir al usuario a la página de pago
+        const redirectUrl = data.redirectUrl;
+        if (redirectUrl) {
+          window.location.assign(redirectUrl);
+        } else {
+          setError("No se pudo redirigir a la página de pago");
+        }
       }
     } catch {
       setError("Error al procesar la compra");
