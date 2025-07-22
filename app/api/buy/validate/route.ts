@@ -65,6 +65,10 @@ export async function POST(request: NextRequest) {
       JSON.stringify({
         success: true,
         redirectUrl: `/payment?event=${event_id}`,
+        sections: sections.map((section) => ({
+          id: section.id,
+          qty: section.qty,
+        })),
       }),
       {
         status: 200,

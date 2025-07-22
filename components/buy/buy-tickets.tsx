@@ -94,26 +94,23 @@ const BuyTickets: React.FC<{
         })),
     };
     try {
-      const res = await fetch("/api/buy/validate", {
+      // Crear el lock en el server
+      const lockRes = await fetch("/api/buy/lock", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error);
-      } else {
-        setError(null);
-        // Redirigir al usuario a la página de pago
-        const redirectUrl = data.redirectUrl;
-        if (redirectUrl) {
-          window.location.assign(redirectUrl);
-        } else {
-          setError("No se pudo redirigir a la página de pago");
-        }
+      const lockData = await lockRes.json();
+      if (!lockRes.ok || !lockData.lockId) {
+        setError(lockData.error || "No se pudo reservar los cupos");
+        setLoading(false);
+        return;
       }
+      setError(null);
+      // Redirigir al usuario a la página de pago con lockId y eventId
+      window.location.assign(
+        `/payment?event=${payload.event_id}&lockId=${lockData.lockId}`
+      );
     } catch {
       setError("Error al procesar la compra");
     } finally {
