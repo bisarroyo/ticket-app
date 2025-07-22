@@ -34,7 +34,6 @@ export async function GET(
         headers: { "Content-Type": "application/json" },
       });
     }
-    console.log(rows);
 
     return new Response(JSON.stringify(rows), {
       status: 200,

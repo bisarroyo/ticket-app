@@ -42,7 +42,6 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     found,
   ]);
 
-  console.log("Event:", selectedEvent);
   if (loading) {
     return (
       <div className="flex justify-center items-center">

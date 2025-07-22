@@ -21,8 +21,8 @@ export default function EventPrices({ sections }: Props) {
           <TableCaption>Lista de precios.</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Ubicación</TableHead>
-              <TableHead className="text-right">Precio</TableHead>
+              <TableHead className="">Ubicación</TableHead>
+              <TableHead className="">Precio</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
