@@ -24,23 +24,15 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
     selectedEvent,
   } = useEventStore();
 
-  const found = getById(paramId);
-
   useEffect(() => {
+    const found = getById(paramId);
     if (found) {
       setSelectedEvent(found);
     } else {
       fetchById(paramId);
       return () => clearSelectedEvent();
     }
-  }, [
-    paramId,
-    getById,
-    fetchById,
-    clearSelectedEvent,
-    setSelectedEvent,
-    found,
-  ]);
+  }, [paramId, getById, fetchById, clearSelectedEvent, setSelectedEvent]);
 
   if (loading) {
     return (
