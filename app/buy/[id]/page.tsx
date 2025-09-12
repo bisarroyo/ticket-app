@@ -25,9 +25,9 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
   } = useEventStore();
 
   useEffect(() => {
-    const found = getById(paramId);
-    if (found) {
-      setSelectedEvent(found);
+    const foundedEvent = getById(paramId);
+    if (foundedEvent) {
+      setSelectedEvent(foundedEvent);
     } else {
       fetchById(paramId);
       return () => clearSelectedEvent();
