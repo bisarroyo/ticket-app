@@ -12,7 +12,7 @@ export default function Events() {
   const { events, loading, error, fetchEvents } = useEventStore();
 
   useEffect(() => {
-    if (events.length <= 1) {
+    if (events.length < 1) {
       fetchEvents();
     }
   }, [events, fetchEvents]);
@@ -40,7 +40,7 @@ export default function Events() {
             return (
               <CardEvent
                 key={events.id}
-                location={event?.venues?.name}
+                location={event?.venues?.venueName}
                 name={events.name}
                 url={`/event/${events.id}`}
                 date={format(events.date, { date: "long" }, "es")}
