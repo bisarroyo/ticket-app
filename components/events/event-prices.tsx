@@ -28,7 +28,7 @@ export default function EventPrices({ sections }: Props) {
           <TableBody>
             {sections?.map((event, index) => (
               <TableRow key={index}>
-                <TableCell className="font-medium">{event.name}</TableCell>
+                <TableCell className="font-medium">{event.sectionName}</TableCell>
                 <TableCell className="text-right">$ {event.price}</TableCell>
               </TableRow>
             ))}
